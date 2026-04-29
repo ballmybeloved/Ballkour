@@ -1,0 +1,1531 @@
+settings
+{
+	main
+	{
+		Description: "Ball Parkour"
+		Mode Name: "Ballkour"
+	}
+
+	lobby
+	{
+		Allow Players Who Are In Queue: Yes
+		Map Rotation: Paused
+		Match Voice Chat: Enabled
+		Max Spectators: 12
+		Max Team 1 Players: 12
+		Max Team 2 Players: 0
+		Return To Lobby: Never
+		Swap Teams After Match: No
+	}
+
+	modes
+	{
+		Skirmish
+		{
+			enabled maps
+			{
+				Watchpoint: Gibraltar 972777519512099996
+			}
+		}
+
+		General
+		{
+			Hero Limit: Off
+		}
+	}
+
+	heroes
+	{
+		General
+		{
+			Wrecking Ball
+			{
+				Grappling Claw Cooldown Time: 0%
+				No Ammunition Requirement: On
+				Piledriver Cooldown Time: 0%
+				Ultimate Generation - Passive Minefield: 0%
+			}
+
+			enabled heroes
+			{
+				Wrecking Ball
+			}
+		}
+	}
+}
+
+variables
+{
+	global:
+		0: timeToBeat
+		1: timeToBeatMs
+		2: lobbySpawn
+		3: cpLocations
+		4: cpBounceRings
+		5: cpIsGrappleAllowed
+
+	player:
+		0: isLoading
+		1: nameplate
+		2: nameplateObject
+		3: isInLobby
+		4: lobbyText
+		5: lobbyEffects
+		6: lobbyIcons
+		7: runIsLoaded
+		8: runIsPaused
+		9: runCurrentCp
+		10: runMistakes
+		11: runTime
+		12: runTimeFormatted
+		13: hr
+		14: remainingSec
+		15: min
+		16: minText
+		17: sec
+		18: secText
+		19: hundredths
+		20: hundredthsText
+		21: runHud
+		22: runIsFinished
+		23: cpData
+		24: cpEffects
+		25: cpIcons
+		27: runCompletionText
+		28: runCompletionTextActive
+		29: controlsHud
+		30: controlsHudActive
+		31: isInFreemode
+		32: freemodeHud
+		100: index
+}
+
+subroutines
+{
+	0: loadLobby
+	1: loadNameplate
+	2: unloadLobby
+	3: loadCp
+	4: newRun
+	5: loadRunHud
+	6: loadCpData
+	7: loadCpObjects
+	8: cpResetPlayer
+	9: unloadCpObjects
+	10: unloadRunHud
+	11: formatRunTime
+	12: loadCtrlsHud
+	13: unloadCtrlsHud
+	14: loadFreemodeHud
+	15: unloadFreemodeHud
+	16: loadRunCompletionText
+	17: unloadRunCompletionText
+}
+
+rule("0: Contact & Course Info")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Log To Inspector(Custom String("Hello! Welcome to Ballkour's Watchpoint: Gibraltar course!"));
+		Log To Inspector(Custom String(
+			"This updated version of code \"DQGPG\" is developed by ballmybeloved, with lobby help from Kalaziel64."));
+		Log To Inspector(Custom String(
+			"This route was slightly adjusted for quality purposes, and also because this map was updated in Feb, 2026."));
+		Log To Inspector(Custom String(
+			"Any comments, questions, or issues? Want to join our Discord or beat the time to beat? Visit ballkour.com!"));
+		Log To Inspector(Custom String("Course run: ballkour.com/playthrough"));
+		Global.timeToBeat = Custom String("5:19.05");
+		Global.timeToBeatMs = 319050;
+	}
+}
+
+rule("1.1: Initialize Match")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Disable Inspector Recording;
+		Disable Built-In Game Mode Announcer;
+		Disable Built-In Game Mode Completion;
+		Set Match Time(0);
+	}
+}
+
+rule("1.2: Initialize Checkpoints (CPs)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Global.lobbySpawn = Vector(112.240, -2, 65.570);
+		Global.cpLocations = Array(Vector(30.354, 5, -151.022), Vector(35.194, 5, -145.988), Vector(42.536, 3.218, -140.939), Vector(
+			36.938, 4.010, -124.670), Vector(19.895, 6, -130.757), Vector(46.563, 4.010, -129.999), Vector(33.077, 6.560, -109.304),
+			Vector(25.660, 4, -88.880), Vector(16.181, 3.046, -67.936), Vector(27.890, 3.050, -70.120), Vector(28.072, 3.998, -105.300),
+			Vector(60.854, 1, -113.372), Vector(44.855, 4.010, -131.473), Vector(39.700, 1, -144.094), Vector(44.910, 1, -138.610), Vector(
+			44.350, 4.010, -130.820), Vector(33.830, 4, -90), Vector(30.991, 3, -72.417), Vector(39.055, -4.947, -75.702), Vector(45.022,
+			-5, -69.766), Vector(47.490, 6, -67.970), Vector(45.640, 4.830, -52.480), Vector(36.368, -2.134, -56.973), Vector(45.662, 3,
+			-36.151), Vector(65.850, 13.140, -38.910), Vector(41.770, 3, -73.610), Vector(36.668, -2.134, -57.072), Vector(53.683, 8.908,
+			-36.387), Vector(82.606, 3, -33.352), Vector(86.119, 3.010, -29.821), Vector(77.563, 6, 6.752), Vector(101.210, -0.940,
+			40.440), Vector(91.745, 6, 9.719), Vector(83.100, 1, 56.160), Vector(81.151, 2.845, 28.890), Vector(71.210, 1, 18.590), Vector(
+			77.622, 6.010, 6.080), Vector(75.526, 10, 7.506), Vector(69.811, 9.010, 12.958), Vector(67.433, 9, 25.709), Vector(98.874,
+			2.745, -16.184), Vector(67.245, -2.905, -13.682), Vector(64.361, -2.993, -16.969), Vector(65.850, 13.140, -38.910), Vector(
+			53.419, 8.734, -38.662), Vector(36.260, -0.260, -47.190), Vector(45.993, 3, -36.446), Vector(57.496, 3, -54.121), Vector(
+			47.490, 6, -67.970), Vector(32.380, -5.150, -57.330), Vector(34.290, 1.190, -53.240), Vector(40.600, -5.010, -51.200), Vector(
+			43.110, -0.510, -49.171), Vector(65.056, -3.141, -26.305), Vector(62.097, 2.028, -22.853), Vector(73.600, -3.140, -38.120),
+			Vector(74.748, 2.107, -34.640), Vector(50.720, 8.720, -47.450), Vector(46.340, 3, -35.780), Vector(47.490, 6, -67.970), Vector(
+			39.460, -5.020, -75.880), Vector(14.081, 3.045, -70.069), Vector(27.170, 0, -104.230), Vector(29.240, 4, -106.270), Vector(
+			42.742, -6.137, -119.077), Vector(36.423, 0, -112.203), Vector(33.015, 6.561, -109.607), Vector(38.880, 0, -99.490), Vector(
+			31.760, 5.510, -92.420), Vector(39.957, 3.998, -102.764), Vector(33.417, 4.010, -86.090), Vector(42.227, 3.990, -130.661),
+			Vector(35.776, 5, -144.535), Vector(16.589, -2, -133.052), Vector(37.649, 4.010, -124.211), Vector(61.452, -7.192, -141.705),
+			Vector(60.992, 1, -115.213), Vector(27.284, 3.013, -84.642), Vector(16.503, -5, -70.262), Vector(29.458, 6.938, -90.962),
+			Vector(38.373, -5.020, -77.208), Vector(56.069, 3, -52.942), Vector(47.966, -5, -68.898), Vector(36.260, -0.260, -47.190),
+			Vector(62.694, -3.003, -16.511), Vector(83.645, 6, 1.309), Vector(97.334, 1, 12.426), Vector(82.130, 10.360, 14.070), Vector(
+			75.569, 9, 22.556), Vector(59.696, 8.354, 20.334), Vector(51.531, 9, 9.279), Vector(41.032, 3, 7.798), Vector(46.180, 9,
+			10.570), Vector(45.060, 3, 3.140), Vector(48.646, 9, 7.999), Vector(81.852, 1, 23.622), Vector(79.799, 9, 21.207), Vector(
+			86.008, -3.141, -1.915), Vector(83.702, 6.010, 0.450), Vector(90.713, -3.045, -5.413), Vector(83.375, 6, 0.473));
+		Global.cpBounceRings = Array(False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+			False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+			False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+			False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+			False, False, False, False, False, Vector(21.742, -1.910, -129.950), False, Vector(63.864, -6.380, -131.746), Vector(36.918,
+			0.092, -95.332), False, Vector(23.858, -5.068, -82.402), False, Vector(44.188, -5.058, -60.366), False, Vector(41.762, -5.059,
+			-62.347), False, Vector(74.739, -3.006, -9.533), False, False, False, False, False, False, False, False, False, False, False,
+			False, False, False, Vector(85.500, -3.150, -1.500));
+		Global.cpIsGrappleAllowed = Array(False, False, True, True, True, True, True, True, False, True, True, True, False, False, False,
+			True, True, True, False, True, False, False, True, True, True, False, True, True, False, True, True, True, True, True, True,
+			True, False, False, False, True, True, False, True, False, False, False, True, True, False, False, False, False, True, False,
+			True, False, True, False, True, True, True, True, False, False, False, False, False, False, False, True, True, False, True,
+			True, True, True, True, False, True, True, True, True, True, True, True, False, True, False, False, False, False, False, False,
+			False, True, False, True, False, False, True);
+	}
+}
+
+rule("2.1: Player Joins")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Wait(0.016, Ignore Condition);
+		Disable Game Mode HUD(Event Player);
+		Disable Game Mode In-World UI(Event Player);
+		Disable Nameplates(Event Player, All Players(All Teams));
+		Call Subroutine(loadLobby);
+		Call Subroutine(loadNameplate);
+		Wait(0.250, Ignore Condition);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("2.1.1: Load Nameplate")
+{
+	event
+	{
+		Subroutine;
+		loadNameplate;
+	}
+
+	actions
+	{
+		Destroy In-World Text(Event Player.nameplateObject);
+		If(Event Player.isInLobby == True);
+			Event Player.nameplate = Event Player;
+		Else;
+			If(Event Player.isInFreemode == False);
+				Event Player.nameplate = Custom String("{0} | {1}", Event Player, Event Player.runCurrentCp);
+			Else;
+				Event Player.nameplate = Custom String("{0} | FREEMODE", Event Player);
+			End;
+		End;
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element != Event Player), Event Player.nameplate,
+			Event Player, 1, Clip Against Surfaces, Visible To Position and String, Color(White), Default Visibility);
+		Event Player.nameplateObject = Last Text ID;
+	}
+}
+
+rule("2.2: Player Leaves")
+{
+	event
+	{
+		Player Left Match;
+		All;
+		All;
+	}
+
+	actions
+	{
+		If(Event Player.runIsLoaded == True);
+			Event Player.runIsPaused = True;
+			Stop Chasing Player Variable(Event Player, runTime);
+		End;
+	}
+}
+
+rule("3.1.1: Load Lobby")
+{
+	event
+	{
+		Subroutine;
+		loadLobby;
+	}
+
+	actions
+	{
+		Event Player.isInLobby = True;
+		Teleport(Event Player, Global.lobbySpawn);
+		Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Vector(103.325, 0.600, 75.955)), To World);
+		Event Player.isInFreemode = False;
+		Event Player.lobbyText = Array();
+		Event Player.lobbyEffects = Array();
+		Event Player.lobbyIcons = Array();
+	}
+}
+
+rule("3.1.1.1: Lobby Boundary")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.isInLobby == True;
+		Event Player.isLoading == False;
+		Distance Between(Position Of(Event Player), Global.lobbySpawn) > 13;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Position Of(Event Player), Global.lobbySpawn), 10, To World, Cancel Contrary Motion);
+	}
+}
+
+rule("3.2: Load Welcome Area")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.isInLobby == True;
+	}
+
+	actions
+	{
+		Create In-World Text(Event Player, Custom String("Welcome to Ballkour!"), Vector(103.325, 1.800, 75.955), 1.500, Do Not Clip, None,
+			Color(Orange), Default Visibility);
+		Event Player.lobbyText[0] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("ballkour.com"), Vector(103.325, 1.300, 75.955), 1, Do Not Clip, None,
+			Custom Color(165, 42, 42, 255), Default Visibility);
+		Event Player.lobbyText[1] = Last Text ID;
+	}
+}
+
+rule("3.3: Load Leaderboard Area")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.isInLobby == True;
+	}
+
+	actions
+	{
+		Create In-World Text(Event Player, Custom String("Leaderboard"), Vector(98.245, 4, 68.085), 1.200, Do Not Clip, None, Color(
+			Yellow), Default Visibility);
+		Event Player.lobbyText[2] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("1. ballmybloved ({0}5:19.05, {1}21)", Icon String(Bolt), Icon String(Skull)),
+			Vector(98.245, 3, 68.085), 0.850, Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[3] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("2.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
+			0.850, Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[4] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("3.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
+			Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[5] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("4.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
+			0.850, Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[6] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("5.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
+			Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[7] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("6.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
+			0.850, Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[8] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("7.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
+			Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[9] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("8.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
+			0.850, Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[10] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("9.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
+			Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[11] = Last Text ID;
+		Create In-World Text(Event Player, Custom String("10.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
+			0.850, Do Not Clip, None, Color(Green), Default Visibility);
+		Event Player.lobbyText[12] = Last Text ID;
+	}
+}
+
+rule("3.4.1: Load Start Run Area")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.isInLobby == True;
+	}
+
+	actions
+	{
+		Create In-World Text(Event Player, Custom String("New Run"), Vector(103.805, -0.300, 75.480), 1, Do Not Clip, None, Color(
+			Turquoise), Default Visibility);
+		Event Player.lobbyText[13] = Last Text ID;
+		Create Effect(Event Player, Ring, Color(Turquoise), Vector(103.805, -1.990, 75.480), 1.600, None);
+		Event Player.lobbyEffects[0] = Last Created Entity;
+		Create Icon(Event Player, Vector(103.805, -2.400, 75.480), Flag, None, Color(Green), True);
+		Event Player.lobbyIcons[0] = Last Created Entity;
+	}
+}
+
+rule("3.4.2: Start Run Circle Entry")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Position Of(Event Player), Vector(103.805, -1.990, 75.480)) < 2;
+		Event Player.isInLobby == True;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Call Subroutine(unloadLobby);
+		Wait(0.016, Ignore Condition);
+		Call Subroutine(newRun);
+		Call Subroutine(loadRunHud);
+		Call Subroutine(loadNameplate);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("3.5.1: Load Resume Run Area")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.isInLobby == True;
+		Event Player.runIsLoaded == True;
+		Event Player.runIsFinished == False;
+	}
+
+	actions
+	{
+		Create In-World Text(Event Player, Custom String("Resume Run"), Vector(101.360, -0.300, 73.035), 1, Do Not Clip, None, Color(Blue),
+			Default Visibility);
+		Event Player.lobbyText[14] = Last Text ID;
+		Create Effect(Event Player, Ring, Color(Blue), Vector(101.360, -1.990, 73.035), 1.600, None);
+		Event Player.lobbyEffects[1] = Last Created Entity;
+		Create Icon(Event Player, Vector(101.360, -2.400, 73.035), Recycle, None, Color(Purple), True);
+		Event Player.lobbyIcons[1] = Last Created Entity;
+	}
+}
+
+rule("3.5.2: Resume Run Circle Entry")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Position Of(Event Player), Vector(101.360, -1.990, 73.035)) < 2;
+		Event Player.isInLobby == True;
+		Event Player.runIsLoaded == True;
+		Event Player.runIsFinished == False;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Call Subroutine(unloadLobby);
+		Wait(0.016, Ignore Condition);
+		Call Subroutine(cpResetPlayer);
+		Set Secondary Fire Enabled(Event Player, Event Player.cpData[4]);
+		Call Subroutine(loadCpObjects);
+		Call Subroutine(loadRunHud);
+		Call Subroutine(loadNameplate);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("3.6: Unload Lobby")
+{
+	event
+	{
+		Subroutine;
+		unloadLobby;
+	}
+
+	actions
+	{
+		Event Player.isInLobby = False;
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.lobbyText), 1);
+			Destroy In-World Text(Event Player.lobbyText[Event Player.index]);
+		End;
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.lobbyEffects), 1);
+			Destroy Effect(Event Player.lobbyEffects[Event Player.index]);
+		End;
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.lobbyIcons), 1);
+			Destroy Icon(Event Player.lobbyIcons[Event Player.index]);
+		End;
+		Allow Button(Event Player, Button(Crouch));
+	}
+}
+
+rule("4: Load CP")
+{
+	event
+	{
+		Subroutine;
+		loadCp;
+	}
+
+	actions
+	{
+		Call Subroutine(unloadCpObjects);
+		Call Subroutine(loadCpData);
+		If(Event Player.runCurrentCp <= 99);
+			Call Subroutine(loadCpObjects);
+		End;
+		Call Subroutine(loadNameplate);
+	}
+}
+
+rule("4.1: Load CP Data")
+{
+	event
+	{
+		Subroutine;
+		loadCpData;
+	}
+
+	actions
+	{
+		"{0: Current CP; 1: Bounce Ring; 2: Bounce Used; 3: Next CP; 4: Grapple Allowed}"
+		Event Player.cpData = Array();
+		Event Player.cpData[0] = Global.cpLocations[Event Player.runCurrentCp];
+		Event Player.cpData[1] = Global.cpBounceRings[Event Player.runCurrentCp];
+		Event Player.cpData[2] = False;
+		Event Player.cpData[3] = Global.cpLocations[Event Player.runCurrentCp + 1];
+		Event Player.cpData[4] = Global.cpIsGrappleAllowed[Event Player.runCurrentCp];
+		Set Secondary Fire Enabled(Event Player, Event Player.cpData[4]);
+	}
+}
+
+rule("4.2.1: Load CP Objects")
+{
+	event
+	{
+		Subroutine;
+		loadCpObjects;
+	}
+
+	actions
+	{
+		Event Player.cpEffects = Array();
+		Event Player.cpIcons = Array();
+		Create Effect(Event Player, Ring, Color(Green), Event Player.cpData[0], 2, Position and Radius);
+		Event Player.cpEffects[0] = Last Created Entity;
+		If(Event Player.cpData[1] != False);
+			Create Effect(Event Player, Ring, Color(Orange), Event Player.cpData[1], 2, Position and Radius);
+			Event Player.cpEffects[1] = Last Created Entity;
+			Create Icon(Event Player, Event Player.cpData[1], Arrow: Up, Position, Color(Yellow), False);
+			Event Player.cpIcons[0] = Last Created Entity;
+		End;
+		Create Effect(Event Player, Ring, Color(Sky Blue), Event Player.cpData[3], 2, Position and Radius);
+		Event Player.cpEffects[2] = Last Created Entity;
+		Create Icon(Event Player, Event Player.cpData[3] - Vector(0, 0.500, 0), Flag, Position, Color(Green), True);
+		Event Player.cpIcons[1] = Last Created Entity;
+		Create Effect(Event Player, Light Shaft, Color(Sky Blue), Event Player.cpData[3], 2, Position and Radius);
+		Event Player.cpEffects[3] = Last Created Entity;
+	}
+}
+
+rule("4.2.2: Unload CP Objects")
+{
+	event
+	{
+		Subroutine;
+		unloadCpObjects;
+	}
+
+	actions
+	{
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.cpEffects), 1);
+			Destroy Effect(Event Player.cpEffects[Event Player.index]);
+		End;
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.cpIcons), 1);
+			Destroy Icon(Event Player.cpIcons[Event Player.index]);
+		End;
+	}
+}
+
+rule("5.1: Initialize New Run")
+{
+	event
+	{
+		Subroutine;
+		newRun;
+	}
+
+	actions
+	{
+		Event Player.runIsLoaded = False;
+		Event Player.runIsLoaded = True;
+		Event Player.runIsPaused = True;
+		Event Player.isInFreemode = False;
+		Event Player.runIsFinished = False;
+		Event Player.runCurrentCp = 0;
+		Event Player.runTime = 0;
+		Event Player.runTimeFormatted = Custom String("0.00");
+		Event Player.runMistakes = 0;
+		Call Subroutine(loadCp);
+		Call Subroutine(cpResetPlayer);
+	}
+}
+
+rule("5.2.1: Load Run HUD")
+{
+	event
+	{
+		Subroutine;
+		loadRunHud;
+	}
+
+	actions
+	{
+		Event Player.runHud = Array();
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 0, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[0] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 1, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[1] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 2, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[2] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 3, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[3] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 4, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[4] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("CTRLS: {0}", Input Binding String(Button(Ultimate))), Left, 4, Null, Null,
+			Color(Orange), String, Default Visibility);
+		Event Player.runHud[5] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("ballkour.com"), Top, 0, Null, Null, Custom Color(165, 42, 42, 255), None,
+			Default Visibility);
+		Event Player.runHud[6] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("{0}/100", Event Player.runCurrentCp), Top, 2, Null, Null, Color(Orange),
+			String, Default Visibility);
+		Event Player.runHud[7] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 0, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[8] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 1, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[9] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 2, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[10] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 3, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[11] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 4, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[12] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Bolt), Event Player.runTimeFormatted), Right, 4,
+			Null, Null, Color(Orange), String, Default Visibility);
+		Event Player.runHud[13] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 5, Null, Null, Color(White), None, Default Visibility);
+		Event Player.runHud[14] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Skull), Event Player.runMistakes), Right, 6, Null,
+			Null, Color(Orange), String, Default Visibility);
+		Event Player.runHud[15] = Last Text ID;
+	}
+}
+
+rule("5.2.2: Unload Run HUD")
+{
+	event
+	{
+		Subroutine;
+		unloadRunHud;
+	}
+
+	actions
+	{
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.runHud), 1);
+			Destroy HUD Text(Event Player.runHud[Event Player.index]);
+		End;
+	}
+}
+
+rule("5.3: Update Timer")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.runIsPaused == False;
+		Event Player.runIsLoaded == True;
+	}
+
+	actions
+	{
+		While(Event Player.runIsPaused == False);
+			Call Subroutine(formatRunTime);
+			Wait(0.030, Abort When False);
+		End;
+	}
+}
+
+rule("6: Start/Resume Run")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.runIsPaused == True;
+		Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200;
+		Event Player.isInFreemode == False;
+		Has Status(Event Player, Rooted) == False;
+		Event Player.isInLobby == False;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		Event Player.runIsPaused = False;
+		Chase Player Variable At Rate(Event Player, runTime, 100000000, 1, Destination and Rate);
+	}
+}
+
+rule("6.1: Grapple Use")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+	}
+
+	actions
+	{
+		Set Ability Cooldown(Event Player, Button(Secondary Fire), 0);
+	}
+}
+
+rule("6.2: Format Run Time String")
+{
+	event
+	{
+		Subroutine;
+		formatRunTime;
+	}
+
+	actions
+	{
+		Event Player.hr = Round To Integer(Event Player.runTime / 3600, Down);
+		Event Player.remainingSec = Event Player.runTime % 3600;
+		Event Player.min = Round To Integer(Event Player.remainingSec / 60, Down);
+		Event Player.sec = Round To Integer(Event Player.remainingSec % 60, Down);
+		Event Player.hundredths = Round To Integer((Event Player.runTime - Round To Integer(Event Player.runTime, Down)) * 100, Down);
+		If(Event Player.sec < 10);
+			Event Player.secText = Custom String("0{0}", Event Player.sec);
+		Else;
+			Event Player.secText = Custom String("{0}", Event Player.sec);
+		End;
+		If(Event Player.hundredths < 10);
+			Event Player.hundredthsText = Custom String("0{0}", Event Player.hundredths);
+		Else;
+			Event Player.hundredthsText = Custom String("{0}", Event Player.hundredths);
+		End;
+		If(Event Player.min < 10);
+			Event Player.minText = Custom String("0{0}", Event Player.min);
+		Else;
+			Event Player.minText = Custom String("{0}", Event Player.min);
+		End;
+		If(Event Player.hr > 0);
+			Event Player.runTimeFormatted = Custom String("{0}:{1}:{2}", Event Player.hr, Event Player.minText, Custom String("{0}.{1}",
+				Event Player.secText, Event Player.hundredthsText));
+		Else If(Event Player.min > 0);
+			Event Player.runTimeFormatted = Custom String("{0}:{1}.{2}", Event Player.min, Event Player.secText, Event Player.hundredthsText);
+		Else;
+			Event Player.runTimeFormatted = Custom String("{0}.{1}", Event Player.sec, Event Player.hundredthsText);
+		End;
+	}
+}
+
+rule("7.1: CP Mistake")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200;
+		(Event Player.cpData[1] == False || Event Player.cpData[2] == True) == True;
+		Distance Between(Position Of(Event Player), Event Player.cpData[3]) > 2.200;
+		Is On Ground(Event Player) == True;
+		Event Player.runIsPaused == False;
+		Event Player.isInFreemode == False;
+		Has Status(Event Player, Rooted) == False;
+		Event Player.isInLobby == False;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		Wait(0.050, Abort When False);
+		Event Player.runMistakes += 1;
+		Call Subroutine(cpResetPlayer);
+	}
+}
+
+rule("7.2: Environment Death")
+{
+	event
+	{
+		Player Died;
+		All;
+		All;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Respawn(Event Player);
+		If(Event Player.isInFreemode == False);
+			Event Player.runMistakes += 1;
+		End;
+		Call Subroutine(cpResetPlayer);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("7.3.1: Bounce Ring CP Mistake: Too Slow")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.cpData[1] != False;
+		Event Player.cpData[2] == False;
+		Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200;
+		Speed Of(Event Player) < 10;
+		Is Button Held(Event Player, Button(Secondary Fire)) == False;
+		Distance Between(Position Of(Event Player), Event Player.cpData[3]) > 2.200;
+		Event Player.isInFreemode == False;
+		Has Status(Event Player, Rooted) == False;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		Event Player.runMistakes += 1;
+		Call Subroutine(cpResetPlayer);
+	}
+}
+
+rule("7.3.2: Bounce CP Mistake: Improper Bounce")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.cpData[1] != False;
+		Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200;
+		Is Jumping(Event Player) == True;
+		Event Player.isInFreemode == False;
+		Has Status(Event Player, Rooted) == False;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		If(Distance Between(Position Of(Event Player), Event Player.cpData[1]) < 2.200);
+			Event Player.cpData[2] = True;
+		Else;
+			Event Player.runMistakes += 1;
+			Call Subroutine(cpResetPlayer);
+		End;
+	}
+}
+
+rule("8: CP Reset Player")
+{
+	event
+	{
+		Subroutine;
+		cpResetPlayer;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Set Status(Event Player, Null, Stunned, 0.016);
+		Teleport(Event Player, Event Player.cpData[0]);
+		Set Status(Event Player, Null, Rooted, 0.300);
+		If(Event Player.runCurrentCp <= 99);
+			Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Global.cpLocations[Event Player.runCurrentCp + 1]),
+				To World);
+		End;
+		Event Player.cpData[2] = False;
+		Event Player.isLoading = False;
+	}
+}
+
+rule("9: CP Completed (No Skipping)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Position Of(Event Player), Event Player.cpData[3]) < 2.200;
+		Is On Ground(Event Player) == True;
+		Event Player.runIsLoaded == True;
+		Event Player.runIsPaused == False;
+		Event Player.isInFreemode == False;
+		Has Status(Event Player, Rooted) == False;
+		Event Player.isLoading == False;
+	}
+
+	actions
+	{
+		Event Player.runCurrentCp += 1;
+		If(Event Player.runCurrentCp <= 99);
+			Play Effect(Event Player, Ring Explosion Sound, Null, Event Player, 100);
+		End;
+		Call Subroutine(loadCp);
+	}
+}
+
+rule("9.1: Final CP Reached")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.runCurrentCp == 100;
+	}
+
+	actions
+	{
+		Play Effect(Event Player, Bad Pickup Effect, Color(Lime Green), Event Player, 200);
+		Play Effect(Event Player, Buff Impact Sound, Null, Event Player, 100);
+		If(Event Player.runIsFinished == False);
+			Call Subroutine(loadRunCompletionText);
+			Event Player.runIsFinished = True;
+		End;
+		Event Player.isInFreemode = True;
+		Set Secondary Fire Enabled(Event Player, True);
+		If(Is Button Held(Event Player, Button(Ultimate)));
+			Call Subroutine(unloadCtrlsHud);
+			Call Subroutine(loadCtrlsHud);
+		End;
+		Call Subroutine(unloadFreemodeHud);
+		Call Subroutine(loadFreemodeHud);
+	}
+}
+
+rule("9.2: Final CP Completed (No Skipping)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.runCurrentCp == 100;
+		Event Player.runIsPaused == False;
+	}
+
+	actions
+	{
+		Event Player.runIsPaused = True;
+		Stop Chasing Player Variable(Event Player, runTime);
+	}
+}
+
+rule("9.3.1: Load Run Completion Text")
+{
+	event
+	{
+		Subroutine;
+		loadRunCompletionText;
+	}
+
+	actions
+	{
+		Event Player.runCompletionText = Array();
+		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 2, Null, Color(White), Null, None, Default Visibility);
+		Event Player.runCompletionText[0] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 3, Null, Color(White), Null, None, Default Visibility);
+		Event Player.runCompletionText[1] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 4, Null, Color(White), Null, None, Default Visibility);
+		Event Player.runCompletionText[2] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String("Congrats, {0}!", Event Player), Null, Top, 5, Null, Color(Yellow), Null, None,
+			Default Visibility);
+		Event Player.runCompletionText[3] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 6, Null, Color(White), Null, None, Default Visibility);
+		Event Player.runCompletionText[4] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String("Time: {0}", Event Player.runTimeFormatted), Null, Top, 7, Null, Color(Orange),
+			Null, None, Default Visibility);
+		Event Player.runCompletionText[5] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String("Mistakes: {0}", Event Player.runMistakes), Null, Top, 8, Null, Color(Orange),
+			Null, None, Default Visibility);
+		Event Player.runCompletionText[6] = Last Text ID;
+		If(Event Player.runTime < Global.timeToBeatMs / 1000);
+			Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 9, Null, Color(White), Null, None, Default Visibility);
+			Event Player.runCompletionText[7] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Top 10 time!"), Null, Top, 10, Null, Color(Orange), Null, None,
+				Default Visibility);
+			Event Player.runCompletionText[8] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("(Time to beat: {0})", Global.timeToBeat), Null, Top, 11, Null, Color(Orange),
+				Null, None, Default Visibility);
+			Event Player.runCompletionText[9] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Submit a video of your run"), Null, Top, 12, Null, Custom Color(165, 42, 42,
+				255), Null, None, Default Visibility);
+			Event Player.runCompletionText[10] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("@"), Null, Top, 13, Null, Custom Color(165, 42, 42, 255), Null, None,
+				Default Visibility);
+			Event Player.runCompletionText[11] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("ballkour.com"), Null, Top, 14, Null, Custom Color(165, 42, 42, 255), Null, None,
+				Default Visibility);
+			Event Player.runCompletionText[12] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 15, Null, Color(White), Null, None, Default Visibility);
+			Event Player.runCompletionText[13] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Thanks for playing!"), Null, Top, 16, Null, Color(Turquoise), Null, None,
+				Default Visibility);
+			Event Player.runCompletionText[14] = Last Text ID;
+		End;
+		Event Player.runCompletionTextActive = True;
+	}
+}
+
+rule("9.3.2: Auto Unload Run Completion Text")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.runCompletionTextActive == True;
+	}
+
+	actions
+	{
+		Wait(30, Ignore Condition);
+		Call Subroutine(unloadRunCompletionText);
+		Event Player.runCompletionTextActive = False;
+	}
+}
+
+rule("9.3.3.3: Unload Run Completion Text")
+{
+	event
+	{
+		Subroutine;
+		unloadRunCompletionText;
+	}
+
+	actions
+	{
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.runCompletionText), 1);
+			Destroy HUD Text(Event Player.runCompletionText[Event Player.index]);
+		End;
+	}
+}
+
+rule("10.1.1: Controls HUD Input")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Event Player.isInLobby == False;
+	}
+
+	actions
+	{
+		Call Subroutine(loadCtrlsHud);
+	}
+}
+
+rule("10.1.2: Load Controls HUD")
+{
+	event
+	{
+		Subroutine;
+		loadCtrlsHud;
+	}
+
+	actions
+	{
+		Event Player.controlsHud = Array();
+		Create HUD Text(Event Player, Null, Custom String("Go Back:       {0} + {1}", Input Binding String(Button(Ultimate)),
+			Input Binding String(Button(Primary Fire))), Null, Left, 5, Null, Color(Aqua), Null, String, Default Visibility);
+		Event Player.controlsHud[1] = Last Text ID;
+		If(Event Player.runCurrentCp <= 99);
+			Create HUD Text(Event Player, Null, Custom String("Skip:                {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Secondary Fire))), Null, Left, 6, Null, Color(Aqua), Null, String, Default Visibility);
+			Event Player.controlsHud[2] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Restart:           {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Reload))), Null, Left, 7, Null, Color(Aqua), Null, String, Default Visibility);
+			Event Player.controlsHud[3] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Freemode:     {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Interact))), Null, Left, 8, Null, Color(Aqua), Null, String, Default Visibility);
+			Event Player.controlsHud[4] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Lobby/Pause: {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Ability 2))), Null, Left, 9, Null, Color(Aqua), Null, String, Default Visibility);
+			Event Player.controlsHud[5] = Last Text ID;
+		Else;
+			Create HUD Text(Event Player, Null, Custom String("Restart:           {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Reload))), Null, Left, 6, Null, Color(Aqua), Null, String, Default Visibility);
+			Event Player.controlsHud[2] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Lobby:              {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Ability 2))), Null, Left, 7, Null, Color(Aqua), Null, String, Default Visibility);
+			Event Player.controlsHud[3] = Last Text ID;
+		End;
+		Event Player.controlsHudActive = True;
+	}
+}
+
+rule("10.1.3: Auto Unload Controls HUD")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.controlsHudActive == True;
+	}
+
+	actions
+	{
+		Wait Until(!Is Button Held(Event Player, Button(Ultimate)) || Event Player.isInLobby, 9999999.000);
+		Call Subroutine(unloadCtrlsHud);
+		Event Player.controlsHudActive = False;
+	}
+}
+
+rule("10.1.4: Unload Controls HUD")
+{
+	event
+	{
+		Subroutine;
+		unloadCtrlsHud;
+	}
+
+	actions
+	{
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.controlsHud), 1);
+			Destroy HUD Text(Event Player.controlsHud[Event Player.index]);
+		End;
+	}
+}
+
+rule("10.2.1: Go Back CP Input")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Primary Fire)) == True;
+		Event Player.isInLobby == False;
+		Event Player.runCurrentCp != 0;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		If(Event Player.runIsPaused == False);
+			Stop Chasing Player Variable(Event Player, runTime);
+			Event Player.runIsPaused = True;
+			If(Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200);
+				Event Player.runMistakes += 1;
+			End;
+		End;
+		Event Player.runCurrentCp -= 1;
+		If(Event Player.runCurrentCp == 99);
+			Call Subroutine(unloadFreemodeHud);
+			Call Subroutine(loadFreemodeHud);
+			If(Is Button Held(Event Player, Button(Ultimate)));
+				Call Subroutine(unloadCtrlsHud);
+				Call Subroutine(loadCtrlsHud);
+			End;
+		End;
+		Call Subroutine(loadCp);
+		Call Subroutine(cpResetPlayer);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("10.2.2: Go Back CP Input (Button Held)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Primary Fire)) == True;
+		Event Player.isInLobby == False;
+	}
+
+	actions
+	{
+		Wait(0.250, Abort When False);
+		While(Is Button Held(Event Player, Button(Primary Fire)) == True && Event Player.runCurrentCp >= 1);
+			Event Player.isLoading = True;
+			Event Player.runCurrentCp -= 1;
+			Call Subroutine(loadCp);
+			Call Subroutine(cpResetPlayer);
+			Event Player.isLoading = False;
+			Wait(0.020, Abort When False);
+		End;
+	}
+}
+
+rule("10.3.1: Skip CP Input")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+		Event Player.isInLobby == False;
+		Event Player.runCurrentCp <= 99;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Event Player.runCurrentCp += 1;
+		If(Event Player.runIsPaused == False);
+			Stop Chasing Player Variable(Event Player, runTime);
+			Event Player.runIsPaused = True;
+			If(Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200);
+				Event Player.runMistakes += 1;
+			End;
+		End;
+		Call Subroutine(loadCp);
+		Call Subroutine(cpResetPlayer);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("10.3.2: Skip CP Input (Button Held)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+		Event Player.isInLobby == False;
+	}
+
+	actions
+	{
+		Wait(0.250, Abort When False);
+		While(Is Button Held(Event Player, Button(Secondary Fire)) == True && Event Player.runCurrentCp <= 99);
+			Event Player.isLoading = True;
+			Event Player.runCurrentCp += 1;
+			Call Subroutine(loadCp);
+			Call Subroutine(cpResetPlayer);
+			Event Player.isLoading = False;
+			Wait(0.020, Abort When False);
+		End;
+	}
+}
+
+rule("10.4: Restart Input")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Reload)) == True;
+		Event Player.isInLobby == False;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		Stop Chasing Player Variable(Event Player, runTime);
+		Call Subroutine(unloadFreemodeHud);
+		Call Subroutine(unloadRunCompletionText);
+		Call Subroutine(newRun);
+		Event Player.isLoading = False;
+	}
+}
+
+rule("10.5: Freemode Input")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Interact)) == True;
+		Event Player.isInLobby == False;
+		Event Player.runCurrentCp <= 99;
+	}
+
+	actions
+	{
+		If(Event Player.isInFreemode == False);
+			Stop Chasing Player Variable(Event Player, runTime);
+			Event Player.runIsPaused = True;
+			If(Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200);
+				Event Player.runMistakes += 1;
+			End;
+			Set Secondary Fire Enabled(Event Player, True);
+			Event Player.isInFreemode = True;
+			Call Subroutine(unloadFreemodeHud);
+			Call Subroutine(loadFreemodeHud);
+		Else;
+			Event Player.isInFreemode = False;
+			Call Subroutine(unloadFreemodeHud);
+			If(Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200);
+				Call Subroutine(cpResetPlayer);
+			End;
+		End;
+	}
+}
+
+rule("10.5.1: Load Freemode HUD")
+{
+	event
+	{
+		Subroutine;
+		loadFreemodeHud;
+	}
+
+	actions
+	{
+		Event Player.freemodeHud = Array();
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 10, Null, Null, Color(White), None, Default Visibility);
+		Event Player.freemodeHud[0] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 11, Null, Null, Color(White), None, Default Visibility);
+		Event Player.freemodeHud[1] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 12, Null, Null, Color(White), None, Default Visibility);
+		Event Player.freemodeHud[2] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 13, Null, Null, Color(White), None, Default Visibility);
+		Event Player.freemodeHud[3] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 14, Null, Null, Color(White), None, Default Visibility);
+		Event Player.freemodeHud[4] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 15, Null, Null, Color(White), None, Default Visibility);
+		Event Player.freemodeHud[5] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("Freemode On"), Left, 16, Null, Null, Color(Orange), None,
+			Default Visibility);
+		Event Player.freemodeHud[6] = Last Text ID;
+		If(Event Player.runCurrentCp <= 99);
+			Create HUD Text(Event Player, Null, Null, Custom String("Disable: {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Interact))), Left, 17, Null, Null, Custom Color(165, 42, 42, 255), String, Default Visibility);
+			Event Player.freemodeHud[7] = Last Text ID;
+		Else;
+			Create HUD Text(Event Player, Null, Null, Custom String("Restart: {0} + {1}", Input Binding String(Button(Ultimate)),
+				Input Binding String(Button(Reload))), Left, 17, Null, Null, Custom Color(165, 42, 42, 255), String, Default Visibility);
+			Event Player.freemodeHud[7] = Last Text ID;
+		End;
+	}
+}
+
+rule("10.5.2: Unload Freemode HUD")
+{
+	event
+	{
+		Subroutine;
+		unloadFreemodeHud;
+	}
+
+	actions
+	{
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.freemodeHud), 1);
+			Destroy HUD Text(Event Player.freemodeHud[Event Player.index]);
+		End;
+	}
+}
+
+rule("10.6: Lobby Input")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Ultimate)) == True;
+		Is Button Held(Event Player, Button(Ability 2)) == True;
+		Event Player.isInLobby == False;
+	}
+
+	actions
+	{
+		Event Player.isLoading = True;
+		If(Event Player.runIsPaused == False);
+			Stop Chasing Player Variable(Event Player, runTime);
+			Event Player.runMistakes += 1;
+			Event Player.runIsPaused = True;
+		End;
+		Call Subroutine(unloadCpObjects);
+		Call Subroutine(unloadRunHud);
+		Call Subroutine(unloadFreemodeHud);
+		Call Subroutine(unloadRunCompletionText);
+		Call Subroutine(loadLobby);
+		Event Player.isLoading = False;
+	}
+}

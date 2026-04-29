@@ -233,6 +233,7 @@ rule("2.1: Player Joins")
 		Disable Game Mode HUD(Event Player);
 		Disable Game Mode In-World UI(Event Player);
 		Disable Nameplates(Event Player, All Players(All Teams));
+        Disable Movement Collision With Players(Event Player);
 		Call Subroutine(loadLobby);
 		Call Subroutine(loadNameplate);
 		Wait(0.250, Ignore Condition);

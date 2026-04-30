@@ -1019,12 +1019,12 @@ rule("9.1: Final CP Reached")
 		End;
 		Event Player.isInFreemode = True;
 		Set Secondary Fire Enabled(Event Player, True);
+		Call Subroutine(unloadFreemodeHud);
+		Call Subroutine(loadFreemodeHud);
 		If(Is Button Held(Event Player, Button(Ultimate)));
 			Call Subroutine(unloadCtrlsHud);
 			Call Subroutine(loadCtrlsHud);
 		End;
-		Call Subroutine(unloadFreemodeHud);
-		Call Subroutine(loadFreemodeHud);
 	}
 }
 
@@ -1367,9 +1367,11 @@ rule("10.4: Restart Input")
 	{
 		Event Player.isLoading = True;
 		Stop Chasing Player Variable(Event Player, runTime);
+		Call Subroutine(newRun);
 		Call Subroutine(unloadFreemodeHud);
 		Call Subroutine(unloadRunCompletionText);
-		Call Subroutine(newRun);
+        Call Subroutine(unloadCtrlsHud);
+        Call Subroutine(loadCtrlsHud);
 		Event Player.isLoading = False;
 	}
 }

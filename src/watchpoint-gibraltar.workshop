@@ -1075,17 +1075,17 @@ rule("9.3.1: Load Run Completion Text")
 		Create HUD Text(Event Player, Null, Custom String("Time: {0}", Event Player.runTimeFormatted), Null, Top, 7, Null, Color(Orange),
 			Null, None, Default Visibility);
 		Event Player.runCompletionText[5] = Last Text ID;
-		Create HUD Text(Event Player, Null, Custom String("Mistakes: {0}", Event Player.runMistakes), Null, Top, 8, Null, Color(Orange),
-			Null, None, Default Visibility);
-		Event Player.runCompletionText[6] = Last Text ID;
-		If(Event Player.runTime < Global.timeToBeatMs / 1000);
-			Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 9, Null, Color(White), Null, None, Default Visibility);
-			Event Player.runCompletionText[7] = Last Text ID;
-			Create HUD Text(Event Player, Null, Custom String("Top 10 time!"), Null, Top, 10, Null, Color(Orange), Null, None,
-				Default Visibility);
-			Event Player.runCompletionText[8] = Last Text ID;
-			Create HUD Text(Event Player, Null, Custom String("(Time to beat: {0})", Global.timeToBeat), Null, Top, 11, Null, Color(Orange),
+        Create HUD Text(Event Player, Null, Custom String("(Time to beat: {0})", Global.timeToBeat), Null, Top, 8, Null, Color(Orange),
 				Null, None, Default Visibility);
+			Event Player.runCompletionText[6] = Last Text ID;
+		Create HUD Text(Event Player, Null, Custom String("Mistakes: {0}", Event Player.runMistakes), Null, Top, 9, Null, Color(Orange),
+			Null, None, Default Visibility);
+		Event Player.runCompletionText[7] = Last Text ID;
+		If(Event Player.runTime < Global.timeToBeatMs / 1000);
+			Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 10, Null, Color(White), Null, None, Default Visibility);
+			Event Player.runCompletionText[8] = Last Text ID;
+			Create HUD Text(Event Player, Null, Custom String("Top 10 time!"), Null, Top, 11, Null, Color(Orange), Null, None,
+				Default Visibility);
 			Event Player.runCompletionText[9] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Submit a video of your run"), Null, Top, 12, Null, Custom Color(165, 42, 42,
 				255), Null, None, Default Visibility);

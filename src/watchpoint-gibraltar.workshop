@@ -66,14 +66,14 @@ variables
 
 	player:
 		0: isLoading
-		1: nameplate
-		2: nameplateObject
-		3: isInLobby
-		4: lobbyText
-		5: lobbyEffects
-		6: lobbyIcons
+		1: isInLobby
+		2: lobbyText
+		3: lobbyEffects
+		4: lobbyIcons
+		5: nameplate
+		6: nameplateObject
 		7: runIsLoaded
-		8: runIsPaused
+        8: runHud
 		9: runCurrentCp
 		10: runMistakes
 		11: runTime
@@ -86,17 +86,18 @@ variables
 		18: secText
 		19: hundredths
 		20: hundredthsText
-		21: runHud
-		22: runIsFinished
-		23: cpData
-		24: cpEffects
-		25: cpIcons
-		27: runCompletionText
-		28: runCompletionTextActive
-		29: controlsHud
-		30: controlsHudActive
-		31: isInFreemode
-		32: freemodeHud
+		21: cpData
+		22: cpEffects
+		23: cpIcons
+        24: runIsPaused
+		25: runIsFinished
+        26: isInFreemode
+		27: freemodeHud
+		28: runCompletionText
+		29: runCompletionTextActive
+		30: ctrlsHud
+		31: ctrlsHudActive
+        32: cpCtrlsInputLocked
 		100: index
 }
 
@@ -108,18 +109,18 @@ subroutines
 	3: loadCp
 	4: newRun
 	5: loadRunHud
-	6: loadCpData
-	7: loadCpObjects
-	8: cpResetPlayer
-	9: unloadCpObjects
-	10: unloadRunHud
-	11: formatRunTime
-	12: loadCtrlsHud
-	13: unloadCtrlsHud
-	14: loadFreemodeHud
-	15: unloadFreemodeHud
-	16: loadRunCompletionText
-	17: unloadRunCompletionText
+    6: formatRunTime
+	7: loadCpData
+	8: loadCpObjects
+	9: cpResetPlayer
+	10: unloadCpObjects
+	11: unloadRunHud
+	12: loadFreemodeHud
+	13: unloadFreemodeHud
+	14: loadRunCompletionText
+	15: unloadRunCompletionText
+    16: loadCtrlsHud
+	17: unloadCtrlsHud
 }
 
 rule("0: Contact & Course Info")
@@ -136,8 +137,7 @@ rule("0: Contact & Course Info")
 			"This updated version of code \"DQGPG\" is developed by ballmybeloved, with lobby help from Kalaziel64."));
 		Log To Inspector(Custom String(
 			"This route was slightly adjusted for quality purposes, and also because this map was updated in Feb, 2026."));
-		Log To Inspector(Custom String(
-			"Any comments, questions, or issues? Want to join our Discord or beat the time to beat? Visit ballkour.com!"));
+		Log To Inspector(Custom String("Any feedback or issues? Want to join our Discord or beat the time to beat? Visit ballkour.com!"));
 		Log To Inspector(Custom String("Course run: ballkour.com/playthrough"));
 		Global.timeToBeat = Custom String("5:19.05");
 		Global.timeToBeatMs = 319050;
@@ -172,7 +172,7 @@ rule("1.2: Initialize Checkpoints (CPs)")
 		Global.lobbySpawn = Vector(112.240, -2, 65.570);
 		Global.cpLocations = Array(Vector(30.354, 5, -151.022), Vector(35.194, 5, -145.988), Vector(42.536, 3.218, -140.939), Vector(
 			36.938, 4.010, -124.670), Vector(19.895, 6, -130.757), Vector(46.563, 4.010, -129.999), Vector(33.077, 6.560, -109.304),
-			Vector(25.660, 4, -88.880), Vector(16.181, 3.046, -67.936), Vector(27.890, 3.050, -70.120), Vector(28.072, 3.998, -105.300),
+			Vector(27.370, 4, -88.810), Vector(16.181, 3.046, -67.936), Vector(27.890, 3.050, -70.120), Vector(28.072, 3.998, -105.300),
 			Vector(60.854, 1, -113.372), Vector(44.855, 4.010, -131.473), Vector(39.700, 1, -144.094), Vector(44.910, 1, -138.610), Vector(
 			44.350, 4.010, -130.820), Vector(33.830, 4, -90), Vector(30.991, 3, -72.417), Vector(39.055, -4.947, -75.702), Vector(45.022,
 			-5, -69.766), Vector(47.490, 6, -67.970), Vector(45.640, 4.830, -52.480), Vector(36.368, -2.134, -56.973), Vector(45.662, 3,
@@ -233,6 +233,7 @@ rule("2.1: Player Joins")
 		Disable Game Mode HUD(Event Player);
 		Disable Game Mode In-World UI(Event Player);
 		Disable Nameplates(Event Player, All Players(All Teams));
+        Disable Movement Collision With Players(Event Player);
 		Call Subroutine(loadLobby);
 		Call Subroutine(loadNameplate);
 		Wait(0.250, Ignore Condition);
@@ -1161,6 +1162,13 @@ rule("10.1.1: Controls HUD Input")
 	actions
 	{
 		Call Subroutine(loadCtrlsHud);
+        Disallow Button(Event Player, Button(Primary Fire));
+		Disallow Button(Event Player, Button(Secondary Fire));
+        Disallow Button(Event Player, Button(Ability 2));
+		Wait Until(Is Button Held(Event Player, Button(Ultimate)) == False || Event Player.isInLobby == True, 999999);
+		Allow Button(Event Player, Button(Primary Fire));
+		Allow Button(Event Player, Button(Secondary Fire));
+        Allow Button(Event Player, Button(Ability 2));
 	}
 }
 
@@ -1174,32 +1182,32 @@ rule("10.1.2: Load Controls HUD")
 
 	actions
 	{
-		Event Player.controlsHud = Array();
+		Event Player.ctrlsHud = Array();
 		Create HUD Text(Event Player, Null, Custom String("Go Back:       {0} + {1}", Input Binding String(Button(Ultimate)),
 			Input Binding String(Button(Primary Fire))), Null, Left, 5, Null, Color(Aqua), Null, String, Default Visibility);
-		Event Player.controlsHud[1] = Last Text ID;
+		Event Player.ctrlsHud[1] = Last Text ID;
 		If(Event Player.runCurrentCp <= 99);
 			Create HUD Text(Event Player, Null, Custom String("Skip:                {0} + {1}", Input Binding String(Button(Ultimate)),
 				Input Binding String(Button(Secondary Fire))), Null, Left, 6, Null, Color(Aqua), Null, String, Default Visibility);
-			Event Player.controlsHud[2] = Last Text ID;
+			Event Player.ctrlsHud[2] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Restart:           {0} + {1}", Input Binding String(Button(Ultimate)),
 				Input Binding String(Button(Reload))), Null, Left, 7, Null, Color(Aqua), Null, String, Default Visibility);
-			Event Player.controlsHud[3] = Last Text ID;
+			Event Player.ctrlsHud[3] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Freemode:     {0} + {1}", Input Binding String(Button(Ultimate)),
 				Input Binding String(Button(Interact))), Null, Left, 8, Null, Color(Aqua), Null, String, Default Visibility);
-			Event Player.controlsHud[4] = Last Text ID;
+			Event Player.ctrlsHud[4] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Lobby/Pause: {0} + {1}", Input Binding String(Button(Ultimate)),
 				Input Binding String(Button(Ability 2))), Null, Left, 9, Null, Color(Aqua), Null, String, Default Visibility);
-			Event Player.controlsHud[5] = Last Text ID;
+			Event Player.ctrlsHud[5] = Last Text ID;
 		Else;
 			Create HUD Text(Event Player, Null, Custom String("Restart:           {0} + {1}", Input Binding String(Button(Ultimate)),
 				Input Binding String(Button(Reload))), Null, Left, 6, Null, Color(Aqua), Null, String, Default Visibility);
-			Event Player.controlsHud[2] = Last Text ID;
+			Event Player.ctrlsHud[2] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Lobby:              {0} + {1}", Input Binding String(Button(Ultimate)),
 				Input Binding String(Button(Ability 2))), Null, Left, 7, Null, Color(Aqua), Null, String, Default Visibility);
-			Event Player.controlsHud[3] = Last Text ID;
+			Event Player.ctrlsHud[3] = Last Text ID;
 		End;
-		Event Player.controlsHudActive = True;
+		Event Player.ctrlsHudActive = True;
 	}
 }
 
@@ -1214,14 +1222,14 @@ rule("10.1.3: Auto Unload Controls HUD")
 
 	conditions
 	{
-		Event Player.controlsHudActive == True;
+		Event Player.ctrlsHudActive == True;
 	}
 
 	actions
 	{
 		Wait Until(!Is Button Held(Event Player, Button(Ultimate)) || Event Player.isInLobby, 9999999.000);
 		Call Subroutine(unloadCtrlsHud);
-		Event Player.controlsHudActive = False;
+		Event Player.ctrlsHudActive = False;
 	}
 }
 
@@ -1235,13 +1243,13 @@ rule("10.1.4: Unload Controls HUD")
 
 	actions
 	{
-		For Player Variable(Event Player, index, 0, Count Of(Event Player.controlsHud), 1);
-			Destroy HUD Text(Event Player.controlsHud[Event Player.index]);
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.ctrlsHud), 1);
+			Destroy HUD Text(Event Player.ctrlsHud[Event Player.index]);
 		End;
 	}
 }
 
-rule("10.2.1: Go Back CP Input")
+rule("10.2: Go Back CP Input")
 {
 	event
 	{
@@ -1254,13 +1262,16 @@ rule("10.2.1: Go Back CP Input")
 	{
 		Is Button Held(Event Player, Button(Ultimate)) == True;
 		Is Button Held(Event Player, Button(Primary Fire)) == True;
+		Event Player.runCurrentCp >= 1;
 		Event Player.isInLobby == False;
-		Event Player.runCurrentCp != 0;
+		Event Player.cpCtrlsInputLocked == False;
+		Event Player.isLoading == False;
 	}
 
 	actions
 	{
-		Event Player.isLoading = True;
+		Event Player.cpCtrlsInputLocked = True;
+        Event Player.isLoading = True;
 		If(Event Player.runIsPaused == False);
 			Stop Chasing Player Variable(Event Player, runTime);
 			Event Player.runIsPaused = True;
@@ -1272,48 +1283,25 @@ rule("10.2.1: Go Back CP Input")
 		If(Event Player.runCurrentCp == 99);
 			Call Subroutine(unloadFreemodeHud);
 			Call Subroutine(loadFreemodeHud);
-			If(Is Button Held(Event Player, Button(Ultimate)));
-				Call Subroutine(unloadCtrlsHud);
-				Call Subroutine(loadCtrlsHud);
-			End;
+			Call Subroutine(unloadCtrlsHud);
+			Call Subroutine(loadCtrlsHud);
 		End;
 		Call Subroutine(loadCp);
 		Call Subroutine(cpResetPlayer);
-		Event Player.isLoading = False;
-	}
-}
-
-rule("10.2.2: Go Back CP Input (Button Held)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Is Button Held(Event Player, Button(Ultimate)) == True;
-		Is Button Held(Event Player, Button(Primary Fire)) == True;
-		Event Player.isInLobby == False;
-	}
-
-	actions
-	{
-		Wait(0.250, Abort When False);
-		While(Is Button Held(Event Player, Button(Primary Fire)) == True && Event Player.runCurrentCp >= 1);
-			Event Player.isLoading = True;
+		Wait Until(Is Button Held(Event Player, Button(Ultimate)) == False || Is Button Held(Event Player, Button(Primary Fire)) == False, 0.150);
+		While(Is Button Held(Event Player, Button(Ultimate)) && Is Button Held(Event Player, Button(Primary Fire)) && Event Player.runCurrentCp >= 1);
 			Event Player.runCurrentCp -= 1;
 			Call Subroutine(loadCp);
 			Call Subroutine(cpResetPlayer);
-			Event Player.isLoading = False;
-			Wait(0.020, Abort When False);
+			Wait(0.02, Ignore Condition);
 		End;
+        Wait Until(Is Button Held(Event Player, Button(Primary Fire)) == False || Is Button Held(Event Player, Button(Ultimate)) == False, 999999);
+        Event Player.cpCtrlsInputLocked = False;
+        Event Player.isLoading = False;
 	}
 }
 
-rule("10.3.1: Skip CP Input")
+rule("10.3: Skip CP Input")
 {
 	event
 	{
@@ -1326,14 +1314,16 @@ rule("10.3.1: Skip CP Input")
 	{
 		Is Button Held(Event Player, Button(Ultimate)) == True;
 		Is Button Held(Event Player, Button(Secondary Fire)) == True;
-		Event Player.isInLobby == False;
 		Event Player.runCurrentCp <= 99;
+		Event Player.isInLobby == False;
+        Event Player.cpCtrlsInputLocked == False;
+		Event Player.isLoading == False;
 	}
 
 	actions
 	{
 		Event Player.isLoading = True;
-		Event Player.runCurrentCp += 1;
+        Event Player.cpCtrlsInputLocked = True;
 		If(Event Player.runIsPaused == False);
 			Stop Chasing Player Variable(Event Player, runTime);
 			Event Player.runIsPaused = True;
@@ -1341,39 +1331,19 @@ rule("10.3.1: Skip CP Input")
 				Event Player.runMistakes += 1;
 			End;
 		End;
+		Event Player.runCurrentCp += 1;
 		Call Subroutine(loadCp);
 		Call Subroutine(cpResetPlayer);
-		Event Player.isLoading = False;
-	}
-}
-
-rule("10.3.2: Skip CP Input (Button Held)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Is Button Held(Event Player, Button(Ultimate)) == True;
-		Is Button Held(Event Player, Button(Secondary Fire)) == True;
-		Event Player.isInLobby == False;
-	}
-
-	actions
-	{
-		Wait(0.250, Abort When False);
-		While(Is Button Held(Event Player, Button(Secondary Fire)) == True && Event Player.runCurrentCp <= 99);
-			Event Player.isLoading = True;
+		Wait Until(Is Button Held(Event Player, Button(Ultimate)) == False || Is Button Held(Event Player, Button(Secondary Fire)) == False, 0.150);
+		While(Is Button Held(Event Player, Button(Ultimate)) && Is Button Held(Event Player, Button(Secondary Fire)) && Event Player.runCurrentCp <= 99);
 			Event Player.runCurrentCp += 1;
 			Call Subroutine(loadCp);
 			Call Subroutine(cpResetPlayer);
-			Event Player.isLoading = False;
-			Wait(0.020, Abort When False);
+			Wait(0.020, Ignore Condition);
 		End;
+        Wait Until(Is Button Held(Event Player, Button(Secondary Fire)) == False || Is Button Held(Event Player, Button(Ultimate)) == False, 999999);
+        Event Player.cpCtrlsInputLocked = False;
+        Event Player.isLoading = False;
 	}
 }
 

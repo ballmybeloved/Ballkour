@@ -58,63 +58,64 @@ variables
 {
 	global:
 		0: lobbySpawn
-		1: cpLocations
-		2: cpBounceRings
-		3: cpIsGrappleAllowed
-		4: timeToBeat
-		5: timeToBeatMs
+		1: lobbyText
+		2: lobbyEffects
+		3: lobbyIcons
+		4: playersInLobby
+		5: cpLocations
+		6: cpBounceRings
+		7: cpIsGrappleAllowed
+		8: timeToBeat
+		9: timeToBeatMs
 
 	player:
 		0: isLoading
 		1: isInLobby
-		2: lobbyText
-		3: lobbyEffects
-		4: lobbyIcons
-		5: nameplate
-		6: nameplateObject
-		7: runIsLoaded
-        8: runHud
-		9: runCurrentCp
-		10: runMistakes
-		11: runTime
-		12: runTimeFormatted
-		13: hr
-		14: remainingSec
-		15: min
-		16: minText
-		17: sec
-		18: secText
-		19: hundredths
-		20: hundredthsText
-		21: cpData
-		22: cpEffects
-		23: cpIcons
-        24: runIsPaused
-		25: runIsFinished
-        26: isInFreemode
-		27: freemodeHud
-		28: runCompletionText
-		29: runCompletionTextActive
-		30: ctrlsHud
-		31: ctrlsHudActive
-        32: cpCtrlsInputLocked
+		2: nameplate
+		3: nameplateObject
+		4: runIsLoaded
+        5: hud
+		6: runCurrentCp
+		7: runMistakes
+		8: runTime
+		9: runTimeFormatted
+		10: hr
+		11: remainingSec
+		12: min
+		13: minText
+		14: sec
+		15: secText
+		16: hundredths
+		17: hundredthsText
+		18: cpData
+		19: cpEffects
+		20: cpIcons
+        21: runIsPaused
+		22: runIsFinished
+        23: isInFreemode
+		24: freemodeHud
+		25: runCompletionText
+		26: runCompletionTextActive
+		27: ctrlsHud
+		28: ctrlsHudActive
+        29: cpCtrlsInputLocked
 		100: index
 }
 
 subroutines
 {
-	0: loadLobby
-	1: loadNameplate
+	0: loadNameplate
+	1: loadLobby
 	2: unloadLobby
 	3: loadCp
 	4: newRun
-	5: loadRunHud
+	5: loadhud
     6: formatRunTime
 	7: loadCpData
 	8: loadCpObjects
 	9: cpResetPlayer
 	10: unloadCpObjects
-	11: unloadRunHud
+	11: unloadHud
 	12: loadFreemodeHud
 	13: unloadFreemodeHud
 	14: loadRunCompletionText
@@ -153,10 +154,14 @@ rule("1.1: Initialize Match")
 
 	actions
 	{
-		Disable Inspector Recording;
+		disabled Disable Inspector Recording;
 		Disable Built-In Game Mode Announcer;
 		Disable Built-In Game Mode Completion;
 		Set Match Time(0);
+		Global.playersInLobby = Array();
+		Global.lobbyText = Array();
+		Global.lobbyEffects = Array();
+		Global.lobbyIcons = Array();
 	}
 }
 
@@ -235,8 +240,9 @@ rule("2.1: Player Joins")
 		Disable Game Mode In-World UI(Event Player);
 		Disable Nameplates(Event Player, All Players(All Teams));
         Disable Movement Collision With Players(Event Player);
-		Call Subroutine(loadLobby);
-		Call Subroutine(loadNameplate);
+		If (Event Player.isInLobby == False);
+			Call Subroutine(loadLobby);
+		End;
 		Wait(0.250, Ignore Condition);
 		Event Player.isLoading = False;
 	}
@@ -297,12 +303,11 @@ rule("3.1.1: Load Lobby")
 	actions
 	{
 		Event Player.isInLobby = True;
+		Global.playersInLobby[Count Of(Global.playersInLobby) - 1] = Event Player;
 		Teleport(Event Player, Global.lobbySpawn);
 		Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Vector(103.325, 0.600, 75.955)), To World);
 		Event Player.isInFreemode = False;
-		Event Player.lobbyText = Array();
-		Event Player.lobbyEffects = Array();
-		Event Player.lobbyIcons = Array();
+		Call Subroutine(loadNameplate);
 	}
 }
 
@@ -332,24 +337,17 @@ rule("3.2: Load Welcome Area")
 {
 	event
 	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.isInLobby == True;
+		Ongoing - Global;
 	}
 
 	actions
 	{
-		Create In-World Text(Event Player, Custom String("Welcome to Ballkour!"), Vector(103.325, 1.800, 75.955), 1.500, Do Not Clip, None,
+		Create In-World Text(Global.playersInLobby, Custom String("Welcome to Ballkour!"), Vector(103.325, 1.800, 75.955), 1.500, Do Not Clip, Visible To,
 			Color(Orange), Default Visibility);
-		Event Player.lobbyText[0] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("ballkour.com"), Vector(103.325, 1.300, 75.955), 1, Do Not Clip, None,
+		Global.lobbyText[0] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("ballkour.com"), Vector(103.325, 1.300, 75.955), 1, Do Not Clip, Visible To,
 			Custom Color(165, 42, 42, 255), Default Visibility);
-		Event Player.lobbyText[1] = Last Text ID;
+		Global.lobbyText[1] = Last Text ID;
 	}
 }
 
@@ -357,51 +355,44 @@ rule("3.3: Load Leaderboard Area")
 {
 	event
 	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.isInLobby == True;
+		Ongoing - Global;
 	}
 
 	actions
 	{
-		Create In-World Text(Event Player, Custom String("Leaderboard"), Vector(98.245, 4, 68.085), 1.200, Do Not Clip, None, Color(
+		Create In-World Text(Global.playersInLobby, Custom String("Leaderboard"), Vector(98.245, 4, 68.085), 1.200, Do Not Clip, Visible To, Color(
 			Yellow), Default Visibility);
-		Event Player.lobbyText[2] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("1. ballmybloved ({0}5:19.05, {1}21)", Icon String(Bolt), Icon String(Skull)),
-			Vector(98.245, 3, 68.085), 0.850, Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[3] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("2. GRAPPLEDIFF ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
-			0.850, Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[4] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("3. PILEDRIVER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
-			Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[5] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("4. ROLLYPOLY ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
-			0.850, Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[6] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("5. SPEEDBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
-			Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[7] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("6. WALLRIDER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
-			0.850, Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[8] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("7. SPIN2WIN ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
-			Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[9] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("8. DUMBBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
-			0.850, Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[10] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("9. BALLER10 ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
-			Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[11] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("10. HAMTER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
-			0.850, Do Not Clip, None, Color(Green), Default Visibility);
-		Event Player.lobbyText[12] = Last Text ID;
+		Global.lobbyText[2] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("1. ballmybloved ({0}5:19.05, {1}21)", Icon String(Bolt), Icon String(Skull)),
+			Vector(98.245, 3, 68.085), 0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[3] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("2. GRAPPLEDIFF ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
+			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[4] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("3. PILEDRIVER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
+			Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[5] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("4. ROLLYPOLY ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
+			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[6] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("5. SPEEDBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
+			Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[7] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("6. WALLRIDER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
+			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[8] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("7. SPIN2WIN ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
+			Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[9] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("8. DUMBBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
+			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[10] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("9. BALLER10 ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
+			Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[11] = Last Text ID;
+		Create In-World Text(Global.playersInLobby, Custom String("10. HAMTER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
+			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
+		Global.lobbyText[12] = Last Text ID;
 	}
 }
 
@@ -409,25 +400,18 @@ rule("3.4.1: Load Start Run Area")
 {
 	event
 	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.isInLobby == True;
+		Ongoing - Global;
 	}
 
 	actions
 	{
-		Create In-World Text(Event Player, Custom String("New Run"), Vector(103.805, -0.300, 75.480), 1, Do Not Clip, None, Color(
+		Create In-World Text(Global.playersInLobby, Custom String("New Run"), Vector(103.805, -0.300, 75.480), 1, Do Not Clip, Visible To, Color(
 			Turquoise), Default Visibility);
-		Event Player.lobbyText[13] = Last Text ID;
-		Create Effect(Event Player, Ring, Color(Turquoise), Vector(103.805, -1.990, 75.480), 1.600, None);
-		Event Player.lobbyEffects[0] = Last Created Entity;
-		Create Icon(Event Player, Vector(103.805, -2.400, 75.480), Flag, None, Color(Green), True);
-		Event Player.lobbyIcons[0] = Last Created Entity;
+		Global.lobbyText[13] = Last Text ID;
+		Create Effect(Global.playersInLobby, Ring, Color(Turquoise), Vector(103.805, -1.990, 75.480), 1.600, Visible To);
+		Global.lobbyEffects[0] = Last Created Entity;
+		Create Icon(Global.playersInLobby, Vector(103.805, -2.400, 75.480), Flag, Visible To, Color(Green), True);
+		Global.lobbyIcons[0] = Last Created Entity;
 	}
 }
 
@@ -453,7 +437,7 @@ rule("3.4.2: Start Run Circle Entry")
 		Call Subroutine(unloadLobby);
 		Wait(0.016, Ignore Condition);
 		Call Subroutine(newRun);
-		Call Subroutine(loadRunHud);
+		Call Subroutine(loadhud);
 		Call Subroutine(loadNameplate);
 		Event Player.isLoading = False;
 	}
@@ -463,27 +447,18 @@ rule("3.5.1: Load Resume Run Area")
 {
 	event
 	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.isInLobby == True;
-		Event Player.runIsLoaded == True;
-		Event Player.runIsFinished == False;
+		Ongoing - Global;
 	}
 
 	actions
 	{
-		Create In-World Text(Event Player, Custom String("Resume Run"), Vector(101.360, -0.300, 73.035), 1, Do Not Clip, None, Color(Blue),
+		Create In-World Text(Global.playersInLobby, Custom String("Resume Run"), Vector(101.360, -0.300, 73.035), 1, Do Not Clip, Visible To, Color(Blue),
 			Default Visibility);
-		Event Player.lobbyText[14] = Last Text ID;
-		Create Effect(Event Player, Ring, Color(Blue), Vector(101.360, -1.990, 73.035), 1.600, None);
-		Event Player.lobbyEffects[1] = Last Created Entity;
-		Create Icon(Event Player, Vector(101.360, -2.400, 73.035), Recycle, None, Color(Purple), True);
-		Event Player.lobbyIcons[1] = Last Created Entity;
+		Global.lobbyText[14] = Last Text ID;
+		Create Effect(Global.playersInLobby, Ring, Color(Blue), Vector(101.360, -1.990, 73.035), 1.600, Visible To);
+		Global.lobbyEffects[1] = Last Created Entity;
+		Create Icon(Global.playersInLobby, Vector(101.360, -2.400, 73.035), Recycle, Visible To, Color(Purple), True);
+		Global.lobbyIcons[1] = Last Created Entity;
 	}
 }
 
@@ -513,7 +488,7 @@ rule("3.5.2: Resume Run Circle Entry")
 		Call Subroutine(cpResetPlayer);
 		Set Secondary Fire Enabled(Event Player, Event Player.cpData[4]);
 		Call Subroutine(loadCpObjects);
-		Call Subroutine(loadRunHud);
+		Call Subroutine(loadhud);
 		Call Subroutine(loadNameplate);
 		Event Player.isLoading = False;
 	}
@@ -530,16 +505,7 @@ rule("3.6: Unload Lobby")
 	actions
 	{
 		Event Player.isInLobby = False;
-		For Player Variable(Event Player, index, 0, Count Of(Event Player.lobbyText), 1);
-			Destroy In-World Text(Event Player.lobbyText[Event Player.index]);
-		End;
-		For Player Variable(Event Player, index, 0, Count Of(Event Player.lobbyEffects), 1);
-			Destroy Effect(Event Player.lobbyEffects[Event Player.index]);
-		End;
-		For Player Variable(Event Player, index, 0, Count Of(Event Player.lobbyIcons), 1);
-			Destroy Icon(Event Player.lobbyIcons[Event Player.index]);
-		End;
-		Allow Button(Event Player, Button(Crouch));
+		Modify Global Variable(playersInLobby, Remove From Array By Value, Event Player);
 	}
 }
 
@@ -660,49 +626,49 @@ rule("5.2.1: Load Run HUD")
 	event
 	{
 		Subroutine;
-		loadRunHud;
+		loadhud;
 	}
 
 	actions
 	{
-		Event Player.runHud = Array();
+		Event Player.hud = Array();
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 0, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[0] = Last Text ID;
+		Event Player.hud[0] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 1, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[1] = Last Text ID;
+		Event Player.hud[1] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 2, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[2] = Last Text ID;
+		Event Player.hud[2] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 3, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[3] = Last Text ID;
+		Event Player.hud[3] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 4, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[4] = Last Text ID;
+		Event Player.hud[4] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String("CTRLS: {0}", Input Binding String(Button(Ultimate))), Left, 4, Null, Null,
 			Color(Orange), String, Default Visibility);
-		Event Player.runHud[5] = Last Text ID;
+		Event Player.hud[5] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String("ballkour.com"), Top, 0, Null, Null, Custom Color(165, 42, 42, 255), None,
 			Default Visibility);
-		Event Player.runHud[6] = Last Text ID;
+		Event Player.hud[6] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String("{0}/100", Event Player.runCurrentCp), Top, 2, Null, Null, Color(Orange),
 			String, Default Visibility);
-		Event Player.runHud[7] = Last Text ID;
+		Event Player.hud[7] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 0, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[8] = Last Text ID;
+		Event Player.hud[8] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 1, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[9] = Last Text ID;
+		Event Player.hud[9] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 2, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[10] = Last Text ID;
+		Event Player.hud[10] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 3, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[11] = Last Text ID;
+		Event Player.hud[11] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 4, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[12] = Last Text ID;
+		Event Player.hud[12] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Bolt), Event Player.runTimeFormatted), Right, 4,
 			Null, Null, Color(Orange), String, Default Visibility);
-		Event Player.runHud[13] = Last Text ID;
+		Event Player.hud[13] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 5, Null, Null, Color(White), None, Default Visibility);
-		Event Player.runHud[14] = Last Text ID;
+		Event Player.hud[14] = Last Text ID;
 		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Skull), Event Player.runMistakes), Right, 6, Null,
 			Null, Color(Orange), String, Default Visibility);
-		Event Player.runHud[15] = Last Text ID;
+		Event Player.hud[15] = Last Text ID;
 	}
 }
 
@@ -711,13 +677,13 @@ rule("5.2.2: Unload Run HUD")
 	event
 	{
 		Subroutine;
-		unloadRunHud;
+		unloadHud;
 	}
 
 	actions
 	{
-		For Player Variable(Event Player, index, 0, Count Of(Event Player.runHud), 1);
-			Destroy HUD Text(Event Player.runHud[Event Player.index]);
+		For Player Variable(Event Player, index, 0, Count Of(Event Player.hud), 1);
+			Destroy HUD Text(Event Player.hud[Event Player.index]);
 		End;
 	}
 }
@@ -1504,7 +1470,7 @@ rule("10.6: Lobby Input")
 			Event Player.runIsPaused = True;
 		End;
 		Call Subroutine(unloadCpObjects);
-		Call Subroutine(unloadRunHud);
+		Call Subroutine(unloadHud);
 		Call Subroutine(unloadFreemodeHud);
 		Call Subroutine(unloadRunCompletionText);
 		Call Subroutine(loadLobby);

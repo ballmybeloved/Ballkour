@@ -16,8 +16,10 @@ _Developed by ballmybeloved, with help from Kalaziel64_
 
 ## Gallery
 
+Logo: ![alt text](gallery/logo.png)
+
 Lobby: ![alt text](gallery/lobby.png)
 
 Regular checkpoint: ![alt text](gallery/checkpoint.png)
 
-Run completion: ![alt text](gallery/run%20completion.png)
+Run completion: ![alt text](gallery/run-completion.png)

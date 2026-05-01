@@ -1298,7 +1298,10 @@ rule("10.2: Go Back CP Input")
 			Wait(0.02, Ignore Condition);
 		End;
         Wait Until(Is Button Held(Event Player, Button(Primary Fire)) == False || Is Button Held(Event Player, Button(Ultimate)) == False, 999999);
-        Event Player.cpCtrlsInputLocked = False;
+        If(Event Player.isInFreemode == True);
+			Set Secondary Fire Enabled(Event Player, True);
+		End;
+		Event Player.cpCtrlsInputLocked = False;
         Event Player.isLoading = False;
 	}
 }
@@ -1344,7 +1347,10 @@ rule("10.3: Skip CP Input")
 			Wait(0.020, Ignore Condition);
 		End;
         Wait Until(Is Button Held(Event Player, Button(Secondary Fire)) == False || Is Button Held(Event Player, Button(Ultimate)) == False, 999999);
-        Event Player.cpCtrlsInputLocked = False;
+        If(Event Player.isInFreemode == True);
+			Set Secondary Fire Enabled(Event Player, True);
+		End;
+		Event Player.cpCtrlsInputLocked = False;
         Event Player.isLoading = False;
 	}
 }
@@ -1413,6 +1419,7 @@ rule("10.5: Freemode Input")
 			If(Distance Between(Position Of(Event Player), Event Player.cpData[0]) > 2.200);
 				Call Subroutine(cpResetPlayer);
 			End;
+			Set Secondary Fire Enabled(Event Player, Event Player.cpData[4]);
 		End;
 		Call Subroutine(loadNameplate);
 	}

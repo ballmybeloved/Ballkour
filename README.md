@@ -1,6 +1,6 @@
 # Ballkour — Watchpoint: Gibraltar
 
-_An Overwatch parkour course for Wrecking Ball_
+_A Wrecking Ball Parkour Course for Overwatch_
 
 Discord: https://ballkour.com/discord
 
@@ -8,7 +8,7 @@ Course code: 59W28
 Course run: https://ballkour.com/playthrough
 
 Found a bug or have a suggestion? Please let us know in our Discord or open an issue here!  
-Set a Top 10 time? Submit a video with your run in our Discord!
+Set a top 10 time? Submit a video with your run in our Discord!
 
 _Developed by ballmybeloved, with help from Kalaziel64_
 

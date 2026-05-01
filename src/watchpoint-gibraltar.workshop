@@ -2,7 +2,7 @@ settings
 {
 	main
 	{
-		Description: "Ball Parkour"
+		Description: "Ball Parkour — Watchpoint: Gibraltar (v1.0.0-rc.3f)"
 		Mode Name: "Ballkour"
 	}
 
@@ -61,12 +61,11 @@ variables
 		1: lobbyText
 		2: lobbyEffects
 		3: lobbyIcons
-		4: playersInLobby
-		5: cpLocations
-		6: cpBounceRings
-		7: cpIsGrappleAllowed
-		8: timeToBeat
-		9: timeToBeatMs
+		4: cpLocations
+		5: cpBounceRings
+		6: cpIsGrappleAllowed
+		7: timeToBeat
+		8: timeToBeatMs
 
 	player:
 		0: isLoading
@@ -154,11 +153,10 @@ rule("1.1: Initialize Match")
 
 	actions
 	{
-		disabled Disable Inspector Recording;
+		Disable Inspector Recording;
 		Disable Built-In Game Mode Announcer;
 		Disable Built-In Game Mode Completion;
 		Set Match Time(0);
-		Global.playersInLobby = Array();
 		Global.lobbyText = Array();
 		Global.lobbyEffects = Array();
 		Global.lobbyIcons = Array();
@@ -303,7 +301,6 @@ rule("3.1.1: Load Lobby")
 	actions
 	{
 		Event Player.isInLobby = True;
-		Global.playersInLobby[Count Of(Global.playersInLobby) - 1] = Event Player;
 		Teleport(Event Player, Global.lobbySpawn);
 		Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Vector(103.325, 0.600, 75.955)), To World);
 		Event Player.isInFreemode = False;
@@ -342,10 +339,10 @@ rule("3.2: Load Welcome Area")
 
 	actions
 	{
-		Create In-World Text(Global.playersInLobby, Custom String("Welcome to Ballkour!"), Vector(103.325, 1.800, 75.955), 1.500, Do Not Clip, Visible To,
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("Welcome to Ballkour!"), Vector(103.325, 1.800, 75.955), 1.500, Do Not Clip, Visible To,
 			Color(Orange), Default Visibility);
 		Global.lobbyText[0] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("ballkour.com"), Vector(103.325, 1.300, 75.955), 1, Do Not Clip, Visible To,
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("ballkour.com"), Vector(103.325, 1.300, 75.955), 1, Do Not Clip, Visible To,
 			Custom Color(165, 42, 42, 255), Default Visibility);
 		Global.lobbyText[1] = Last Text ID;
 	}
@@ -360,37 +357,37 @@ rule("3.3: Load Leaderboard Area")
 
 	actions
 	{
-		Create In-World Text(Global.playersInLobby, Custom String("Leaderboard"), Vector(98.245, 4, 68.085), 1.200, Do Not Clip, Visible To, Color(
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("Leaderboard"), Vector(98.245, 4, 68.085), 1.200, Do Not Clip, Visible To, Color(
 			Yellow), Default Visibility);
 		Global.lobbyText[2] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("1. ballmybloved ({0}5:19.05, {1}21)", Icon String(Bolt), Icon String(Skull)),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("1. ballmybloved ({0}5:19.05, {1}21)", Icon String(Bolt), Icon String(Skull)),
 			Vector(98.245, 3, 68.085), 0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[3] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("2. GRAPPLEDIFF ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("2. GRAPPLEDIFF ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
 			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[4] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("3. PILEDRIVER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("3. PILEDRIVER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
 			Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[5] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("4. ROLLYPOLY ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("4. ROLLYPOLY ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
 			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[6] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("5. SPEEDBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("5. SPEEDBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
 			Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[7] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("6. WALLRIDER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("6. WALLRIDER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
 			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[8] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("7. SPIN2WIN ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("7. SPIN2WIN ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
 			Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[9] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("8. DUMBBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("8. DUMBBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
 			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[10] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("9. BALLER10 ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("9. BALLER10 ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
 			Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[11] = Last Text ID;
-		Create In-World Text(Global.playersInLobby, Custom String("10. HAMTER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("10. HAMTER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
 			0.850, Do Not Clip, Visible To, Color(Green), Default Visibility);
 		Global.lobbyText[12] = Last Text ID;
 	}
@@ -405,12 +402,12 @@ rule("3.4.1: Load Start Run Area")
 
 	actions
 	{
-		Create In-World Text(Global.playersInLobby, Custom String("New Run"), Vector(103.805, -0.300, 75.480), 1, Do Not Clip, Visible To, Color(
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("New Run"), Vector(103.805, -0.300, 75.480), 1, Do Not Clip, Visible To, Color(
 			Turquoise), Default Visibility);
 		Global.lobbyText[13] = Last Text ID;
-		Create Effect(Global.playersInLobby, Ring, Color(Turquoise), Vector(103.805, -1.990, 75.480), 1.600, Visible To);
+		Create Effect(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Ring, Color(Turquoise), Vector(103.805, -1.990, 75.480), 1.600, Visible To);
 		Global.lobbyEffects[0] = Last Created Entity;
-		Create Icon(Global.playersInLobby, Vector(103.805, -2.400, 75.480), Flag, Visible To, Color(Green), True);
+		Create Icon(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Vector(103.805, -2.400, 75.480), Flag, Visible To, Color(Green), True);
 		Global.lobbyIcons[0] = Last Created Entity;
 	}
 }
@@ -434,7 +431,7 @@ rule("3.4.2: Start Run Circle Entry")
 	actions
 	{
 		Event Player.isLoading = True;
-		Call Subroutine(unloadLobby);
+		Event Player.isInLobby = False;
 		Wait(0.016, Ignore Condition);
 		Call Subroutine(newRun);
 		Call Subroutine(loadhud);
@@ -447,17 +444,26 @@ rule("3.5.1: Load Resume Run Area")
 {
 	event
 	{
-		Ongoing - Global;
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.isInLobby == True;
+		Event Player.runIsLoaded == True;
+		Event Player.runIsFinished == False;
 	}
 
 	actions
 	{
-		Create In-World Text(Global.playersInLobby, Custom String("Resume Run"), Vector(101.360, -0.300, 73.035), 1, Do Not Clip, Visible To, Color(Blue),
+		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("Resume Run"), Vector(101.360, -0.300, 73.035), 1, Do Not Clip, Visible To, Color(Blue),
 			Default Visibility);
 		Global.lobbyText[14] = Last Text ID;
-		Create Effect(Global.playersInLobby, Ring, Color(Blue), Vector(101.360, -1.990, 73.035), 1.600, Visible To);
+		Create Effect(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Ring, Color(Blue), Vector(101.360, -1.990, 73.035), 1.600, Visible To);
 		Global.lobbyEffects[1] = Last Created Entity;
-		Create Icon(Global.playersInLobby, Vector(101.360, -2.400, 73.035), Recycle, Visible To, Color(Purple), True);
+		Create Icon(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Vector(101.360, -2.400, 73.035), Recycle, Visible To, Color(Purple), True);
 		Global.lobbyIcons[1] = Last Created Entity;
 	}
 }
@@ -483,7 +489,7 @@ rule("3.5.2: Resume Run Circle Entry")
 	actions
 	{
 		Event Player.isLoading = True;
-		Call Subroutine(unloadLobby);
+		Event Player.isInLobby = False;
 		Wait(0.016, Ignore Condition);
 		Call Subroutine(cpResetPlayer);
 		Set Secondary Fire Enabled(Event Player, Event Player.cpData[4]);
@@ -491,21 +497,6 @@ rule("3.5.2: Resume Run Circle Entry")
 		Call Subroutine(loadhud);
 		Call Subroutine(loadNameplate);
 		Event Player.isLoading = False;
-	}
-}
-
-rule("3.6: Unload Lobby")
-{
-	event
-	{
-		Subroutine;
-		unloadLobby;
-	}
-
-	actions
-	{
-		Event Player.isInLobby = False;
-		Modify Global Variable(playersInLobby, Remove From Array By Value, Event Player);
 	}
 }
 

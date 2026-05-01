@@ -57,12 +57,12 @@ settings
 variables
 {
 	global:
-		0: timeToBeat
-		1: timeToBeatMs
-		2: lobbySpawn
-		3: cpLocations
-		4: cpBounceRings
-		5: cpIsGrappleAllowed
+		0: lobbySpawn
+		1: cpLocations
+		2: cpBounceRings
+		3: cpIsGrappleAllowed
+		4: timeToBeat
+		5: timeToBeatMs
 
 	player:
 		0: isLoading

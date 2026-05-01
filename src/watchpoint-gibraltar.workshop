@@ -374,31 +374,31 @@ rule("3.3: Load Leaderboard Area")
 		Create In-World Text(Event Player, Custom String("1. ballmybloved ({0}5:19.05, {1}21)", Icon String(Bolt), Icon String(Skull)),
 			Vector(98.245, 3, 68.085), 0.850, Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[3] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("2.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
+		Create In-World Text(Event Player, Custom String("2. GRAPPLEDIFF ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2.500, 68.085),
 			0.850, Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[4] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("3.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
+		Create In-World Text(Event Player, Custom String("3. PILEDRIVER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 2, 68.085), 0.850,
 			Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[5] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("4.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
+		Create In-World Text(Event Player, Custom String("4. ROLLYPOLY ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1.500, 68.085),
 			0.850, Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[6] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("5.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
+		Create In-World Text(Event Player, Custom String("5. SPEEDBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 1, 68.085), 0.850,
 			Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[7] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("6.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
+		Create In-World Text(Event Player, Custom String("6. WALLRIDER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0.500, 68.085),
 			0.850, Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[8] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("7.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
+		Create In-World Text(Event Player, Custom String("7. SPIN2WIN ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, 0, 68.085), 0.850,
 			Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[9] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("8.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
+		Create In-World Text(Event Player, Custom String("8. DUMBBALL ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -0.500, 68.085),
 			0.850, Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[10] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("9.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
+		Create In-World Text(Event Player, Custom String("9. BALLER10 ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1, 68.085), 0.850,
 			Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[11] = Last Text ID;
-		Create In-World Text(Event Player, Custom String("10.", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
+		Create In-World Text(Event Player, Custom String("10. HAMTER ({0}0:00.00, {1}0)", Icon String(Bolt), Icon String(Skull)), Vector(98.245, -1.500, 68.085),
 			0.850, Do Not Clip, None, Color(Green), Default Visibility);
 		Event Player.lobbyText[12] = Last Text ID;
 	}

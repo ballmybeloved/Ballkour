@@ -231,6 +231,7 @@ rule("2.1: Player Joins")
 		Event Player.isLoading = True;
 		Wait(0.016, Ignore Condition);
 		Disable Game Mode HUD(Event Player);
+		Disable Kill Feed(Event Player);
 		Disable Game Mode In-World UI(Event Player);
 		Disable Nameplates(Event Player, All Players(All Teams));
         Disable Movement Collision With Players(Event Player);

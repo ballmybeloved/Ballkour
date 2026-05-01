@@ -1019,6 +1019,7 @@ rule("9.1: Final CP Reached")
 		End;
 		Event Player.isInFreemode = True;
 		Set Secondary Fire Enabled(Event Player, True);
+		Call Subroutine(loadNameplate);
 		Call Subroutine(unloadFreemodeHud);
 		Call Subroutine(loadFreemodeHud);
 		If(Is Button Held(Event Player, Button(Ultimate)));
@@ -1412,6 +1413,7 @@ rule("10.5: Freemode Input")
 				Call Subroutine(cpResetPlayer);
 			End;
 		End;
+		Call Subroutine(loadNameplate);
 	}
 }
 

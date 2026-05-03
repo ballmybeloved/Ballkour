@@ -61,11 +61,12 @@ variables
 		1: lobbyText
 		2: lobbyEffects
 		3: lobbyIcons
-		4: cpLocations
-		5: cpBounceRings
-		6: cpIsGrappleAllowed
-		7: timeToBeat
-		8: timeToBeatMs
+		4: hud
+		5: cpLocations
+		6: cpBounceRings
+		7: cpIsGrappleAllowed
+		8: timeToBeat
+		9: timeToBeatMs
 
 	player:
 		0: isLoading
@@ -108,7 +109,7 @@ subroutines
 	2: unloadLobby
 	3: loadCp
 	4: newRun
-	5: loadhud
+	5: loadHud
     6: formatRunTime
 	7: loadCpData
 	8: loadCpObjects
@@ -302,7 +303,7 @@ rule("3.1.1: Load Lobby")
 	{
 		Event Player.isInLobby = True;
 		Teleport(Event Player, Global.lobbySpawn);
-		Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Vector(103.325, 0.600, 75.955)), To World);
+		Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Vector(103.325, 1, 75.955)), To World);
 		Event Player.isInFreemode = False;
 		Call Subroutine(loadNameplate);
 	}
@@ -321,7 +322,7 @@ rule("3.1.1.1: Lobby Boundary")
 	{
 		Event Player.isInLobby == True;
 		Event Player.isLoading == False;
-		Distance Between(Position Of(Event Player), Global.lobbySpawn) > 13;
+		Distance Between(Position Of(Event Player), Global.lobbySpawn) > 17;
 	}
 
 	actions
@@ -342,9 +343,6 @@ rule("3.2: Load Welcome Area")
 		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("Welcome to Ballkour!"), Vector(103.325, 1.800, 75.955), 1.500, Do Not Clip, Visible To,
 			Color(Orange), Default Visibility);
 		Global.lobbyText[0] = Last Text ID;
-		Create In-World Text(Filtered Array(All Players(All Teams), Current Array Element.isInLobby == True), Custom String("ballkour.com"), Vector(103.325, 1.300, 75.955), 1, Do Not Clip, Visible To,
-			Custom Color(165, 42, 42, 255), Default Visibility);
-		Global.lobbyText[1] = Last Text ID;
 	}
 }
 
@@ -434,7 +432,7 @@ rule("3.4.2: Start Run Circle Entry")
 		Event Player.isInLobby = False;
 		Wait(0.016, Ignore Condition);
 		Call Subroutine(newRun);
-		Call Subroutine(loadhud);
+		Call Subroutine(loadHud);
 		Call Subroutine(loadNameplate);
 		Event Player.isLoading = False;
 	}
@@ -494,7 +492,7 @@ rule("3.5.2: Resume Run Circle Entry")
 		Call Subroutine(cpResetPlayer);
 		Set Secondary Fire Enabled(Event Player, Event Player.cpData[4]);
 		Call Subroutine(loadCpObjects);
-		Call Subroutine(loadhud);
+		Call Subroutine(loadHud);
 		Call Subroutine(loadNameplate);
 		Event Player.isLoading = False;
 	}
@@ -588,7 +586,83 @@ rule("4.2.2: Unload CP Objects")
 	}
 }
 
-rule("5.1: Initialize New Run")
+rule("5.1.1: Load Global Run HUD")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Global.hud = Array();
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Left, 0, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[0] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Left, 1, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[1] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Left, 2, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[2] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Left, 3, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[3] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Left, 4, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[4] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("ballkour.com"), Top, 0, Null, Null, Custom Color(165, 42, 42, 255), Visible To,
+			Default Visibility);
+		Global.hud[5] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Right, 0, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[6] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Right, 1, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[7] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Right, 2, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[8] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Right, 3, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[9] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Right, 4, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[10] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" "), Right, 5, Null, Null, Color(White), Visible To, Default Visibility);
+		Global.hud[11] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Custom String(" "), Null, Top, 2, Null, Color(White), Null, Visible To, Default Visibility);
+		Global.hud[12] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Custom String(" "), Null, Top, 3, Null, Color(White), Null, Visible To, Default Visibility);
+		Global.hud[13] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Custom String(" "), Null, Top, 4, Null, Color(White), Null, Visible To, Default Visibility);
+		Global.hud[14] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Custom String(" "), Null, Top, 6, Null, Color(White), Null, Visible To, Default Visibility);
+		Global.hud[15] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Custom String(" "), Null, Top, 10, Null, Color(White), Null, Visible To, Default Visibility);
+		Global.hud[16] = Last Text ID;
+		Create HUD Text(All Players(All Teams), Null, Custom String(" "), Null, Top, 15, Null, Color(White), Null, Visible To, Default Visibility);
+		Global.hud[17] = Last Text ID;
+	}
+}
+
+rule("5.1.2: Load Local Run HUD")
+{
+	event
+	{
+		Subroutine;
+		loadHud;
+	}
+
+	actions
+	{
+		Event Player.hud = Array();
+		Create HUD Text(Event Player, Null, Null, Custom String("Controls: {0}", Input Binding String(Button(Ultimate))), Left, 4, Null, Null,
+			Color(Orange), String, Default Visibility);
+		Event Player.hud[0] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("{0}/100", Event Player.runCurrentCp), Top, 1, Null, Null, Color(Orange),
+			String, Default Visibility);
+		Event Player.hud[1] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Bolt), Event Player.runTimeFormatted), Right, 4,
+			Null, Null, Color(Orange), String, Default Visibility);
+		Event Player.hud[2] = Last Text ID;
+		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Skull), Event Player.runMistakes), Right, 6, Null,
+			Null, Color(Orange), String, Default Visibility);
+		Event Player.hud[3] = Last Text ID;
+	}
+}
+
+rule("5.2: Initialize New Run")
 {
 	event
 	{
@@ -612,58 +686,7 @@ rule("5.1: Initialize New Run")
 	}
 }
 
-rule("5.2.1: Load Run HUD")
-{
-	event
-	{
-		Subroutine;
-		loadhud;
-	}
-
-	actions
-	{
-		Event Player.hud = Array();
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 0, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[0] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 1, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[1] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 2, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[2] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 3, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[3] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Left, 4, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[4] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String("CTRLS: {0}", Input Binding String(Button(Ultimate))), Left, 4, Null, Null,
-			Color(Orange), String, Default Visibility);
-		Event Player.hud[5] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String("ballkour.com"), Top, 0, Null, Null, Custom Color(165, 42, 42, 255), None,
-			Default Visibility);
-		Event Player.hud[6] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String("{0}/100", Event Player.runCurrentCp), Top, 2, Null, Null, Color(Orange),
-			String, Default Visibility);
-		Event Player.hud[7] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 0, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[8] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 1, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[9] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 2, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[10] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 3, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[11] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 4, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[12] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Bolt), Event Player.runTimeFormatted), Right, 4,
-			Null, Null, Color(Orange), String, Default Visibility);
-		Event Player.hud[13] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String(" "), Right, 5, Null, Null, Color(White), None, Default Visibility);
-		Event Player.hud[14] = Last Text ID;
-		Create HUD Text(Event Player, Null, Null, Custom String("{0} {1}", Icon String(Skull), Event Player.runMistakes), Right, 6, Null,
-			Null, Color(Orange), String, Default Visibility);
-		Event Player.hud[15] = Last Text ID;
-	}
-}
-
-rule("5.2.2: Unload Run HUD")
+rule("5.3: Unload Run HUD")
 {
 	event
 	{
@@ -675,30 +698,6 @@ rule("5.2.2: Unload Run HUD")
 	{
 		For Player Variable(Event Player, index, 0, Count Of(Event Player.hud), 1);
 			Destroy HUD Text(Event Player.hud[Event Player.index]);
-		End;
-	}
-}
-
-rule("5.3: Update Timer")
-{
-	event
-	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.runIsPaused == False;
-		Event Player.runIsLoaded == True;
-	}
-
-	actions
-	{
-		While(Event Player.runIsPaused == False);
-			Call Subroutine(formatRunTime);
-			Wait(0.030, Abort When False);
 		End;
 	}
 }
@@ -729,7 +728,8 @@ rule("6: Start/Resume Run")
 	}
 }
 
-rule("6.1: Grapple Use")
+
+rule("6.1: Update Timer")
 {
 	event
 	{
@@ -740,12 +740,16 @@ rule("6.1: Grapple Use")
 
 	conditions
 	{
-		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+		Event Player.runIsPaused == False;
+		Event Player.runIsLoaded == True;
 	}
 
 	actions
 	{
-		Set Ability Cooldown(Event Player, Button(Secondary Fire), 0);
+		While(Event Player.runIsPaused == False);
+			Call Subroutine(formatRunTime);
+			Wait(0.030, Abort When False);
+		End;
 	}
 }
 
@@ -790,6 +794,26 @@ rule("6.2: Format Run Time String")
 	}
 }
 
+rule("6.3: Grapple Use")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+	}
+
+	actions
+	{
+		Set Ability Cooldown(Event Player, Button(Secondary Fire), 0);
+	}
+}
+
 rule("7.1: CP Mistake")
 {
 	event
@@ -814,7 +838,6 @@ rule("7.1: CP Mistake")
 
 	actions
 	{
-		Wait(0.050, Abort When False);
 		Event Player.runMistakes += 1;
 		Call Subroutine(cpResetPlayer);
 	}
@@ -1020,46 +1043,34 @@ rule("9.3.1: Load Run Completion Text")
 	actions
 	{
 		Event Player.runCompletionText = Array();
-		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 2, Null, Color(White), Null, None, Default Visibility);
-		Event Player.runCompletionText[0] = Last Text ID;
-		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 3, Null, Color(White), Null, None, Default Visibility);
-		Event Player.runCompletionText[1] = Last Text ID;
-		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 4, Null, Color(White), Null, None, Default Visibility);
-		Event Player.runCompletionText[2] = Last Text ID;
 		Create HUD Text(Event Player, Null, Custom String("Congrats, {0}!", Event Player), Null, Top, 5, Null, Color(Yellow), Null, None,
 			Default Visibility);
-		Event Player.runCompletionText[3] = Last Text ID;
-		Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 6, Null, Color(White), Null, None, Default Visibility);
-		Event Player.runCompletionText[4] = Last Text ID;
+		Event Player.runCompletionText[0] = Last Text ID;
 		Create HUD Text(Event Player, Null, Custom String("Time: {0}", Event Player.runTimeFormatted), Null, Top, 7, Null, Color(Orange),
 			Null, None, Default Visibility);
-		Event Player.runCompletionText[5] = Last Text ID;
+		Event Player.runCompletionText[1] = Last Text ID;
         Create HUD Text(Event Player, Null, Custom String("(Time to beat: {0})", Global.timeToBeat), Null, Top, 8, Null, Color(Orange),
 				Null, None, Default Visibility);
-			Event Player.runCompletionText[6] = Last Text ID;
+		Event Player.runCompletionText[2] = Last Text ID;
 		Create HUD Text(Event Player, Null, Custom String("Mistakes: {0}", Event Player.runMistakes), Null, Top, 9, Null, Color(Orange),
 			Null, None, Default Visibility);
-		Event Player.runCompletionText[7] = Last Text ID;
+		Event Player.runCompletionText[3] = Last Text ID;
 		If(Event Player.runTime < Global.timeToBeatMs / 1000);
-			Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 10, Null, Color(White), Null, None, Default Visibility);
-			Event Player.runCompletionText[8] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Top 10 time!"), Null, Top, 11, Null, Color(Orange), Null, None,
 				Default Visibility);
-			Event Player.runCompletionText[9] = Last Text ID;
+			Event Player.runCompletionText[4] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Submit a video of your run"), Null, Top, 12, Null, Custom Color(165, 42, 42,
 				255), Null, None, Default Visibility);
-			Event Player.runCompletionText[10] = Last Text ID;
+			Event Player.runCompletionText[5] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("@"), Null, Top, 13, Null, Custom Color(165, 42, 42, 255), Null, None,
 				Default Visibility);
-			Event Player.runCompletionText[11] = Last Text ID;
+			Event Player.runCompletionText[6] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("ballkour.com"), Null, Top, 14, Null, Custom Color(165, 42, 42, 255), Null, None,
 				Default Visibility);
-			Event Player.runCompletionText[12] = Last Text ID;
-			Create HUD Text(Event Player, Null, Custom String(" "), Null, Top, 15, Null, Color(White), Null, None, Default Visibility);
-			Event Player.runCompletionText[13] = Last Text ID;
+			Event Player.runCompletionText[7] = Last Text ID;
 			Create HUD Text(Event Player, Null, Custom String("Thanks for playing!"), Null, Top, 16, Null, Color(Turquoise), Null, None,
 				Default Visibility);
-			Event Player.runCompletionText[14] = Last Text ID;
+			Event Player.runCompletionText[8] = Last Text ID;
 		End;
 		Event Player.runCompletionTextActive = True;
 	}
